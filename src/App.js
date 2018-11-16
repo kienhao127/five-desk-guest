@@ -22,11 +22,14 @@ import 'moment/locale/vi';
 
 //Socket
 import io from 'socket.io-client';
-const socket = io('http://localhost:4000')
+const socket = io('https://fivedesk.herokuapp.com')
+// const socket = io('http://localhost:8888')
 
 moment.locale('vi');
 const img_me = "https://i.imgur.com/p9bwTYj.png";
 var currentUser = null;
+
+const publicIP = '127.0.0.2'
 
 class App extends React.Component {
   constructor(props) {
@@ -52,6 +55,9 @@ class App extends React.Component {
       content: '',
     };
     socket.on('chat message', (message) => this.onReceiveMessage(message));
+    socket.on('time', function(timeString) {
+      console.log('Server time: ' + timeString);
+    });
   }
 
   componentDidMount() {
@@ -72,24 +78,25 @@ class App extends React.Component {
   onSendMessage = () => {
     var message = {
       token: sessionStorage.getItem('token'),
-      TopicID: '127.0.0.3',
-      SenderID: '127.0.0.3',
+      TopicID: publicIP,
+      SenderID: publicIP,
       RecieverID: 2,
       Content: this.state.content,
       SendTime: new Date().getTime(),
       TypeID: 1,
+      CompanyID: 1,
     }
     this.setState({
       content: '',
     })
-    console.log('Gửi tin nhắn đi server với nội dung là: message');
+    console.log('Gửi tin nhắn đi server với nội dung là', message);
     socket.emit('chat message', message);
   }
 
   onReceiveMessage = (message) => {
     console.log('Nhận tin nhắn từ server')
     console.log(message);
-    if (message.TopicID == '127.0.0.3') {
+    if (message.TopicID == publicIP) {
       var listMessage = this.state.listMessage;
       listMessage.push(message);
       this.setState({
